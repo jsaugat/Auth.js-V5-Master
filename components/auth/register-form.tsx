@@ -45,14 +45,14 @@ export const RegisterForm = () => {
     setError("");
 
     console.log("Form data:", credentials);
-    console.log("error ", error)
-    console.log("success ", success)
 
     startTransition(() => {
       register(credentials)
         .then((data) => {
           setError(data.error)
           setSuccess(data.success)
+          console.log("error ", error)
+          console.log("success ", success)
         })
     })
   };
