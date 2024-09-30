@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 import { auth } from "@/auth"
 
 // This function can be marked `async` if using `await` inside
@@ -7,10 +5,11 @@ import { auth } from "@/auth"
 //   return NextResponse.redirect(new URL('/', request.url))
 // }
 
-export default auth((request: NextRequest) => {
+export default auth((request) => {
   // console.log(request.auth)
-  console.log( "Current Pathname", request.nextUrl.pathname);
-  
+  const isLoggedIn = !!request.auth;
+  console.log("Is Logged In (middleware.ts)", isLoggedIn)
+  console.log("Current Pathname (middleware.ts)", request.nextUrl.pathname);
   // return NextResponse.redirect(new URL('/', request.url))
 })
 

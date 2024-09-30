@@ -11,6 +11,7 @@ export default function Home() {
         <h1 className="font-semibold text-6xl">Auth V5</h1>
       </div>
       <p className="text-2xl">Authentication, simplified for efficiency.</p>
+      
       <LoginButton asChild>
         <Button variant="secondary">
           Sign in

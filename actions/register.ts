@@ -7,27 +7,26 @@ import { db } from "@/lib/db";
 import { getUserByEmail } from "@/data/user";
 
 export const register = async (credentials: z.infer<typeof RegisterSchema>) => {
-  // Log the incoming credentials (for debugging purposes, remove in production)
-  console.log(credentials)
+  console.log("Register Credentials --> ", credentials)
 
-  // Validate the credentials against the RegisterSchema using Zod's safeParse method
+  //? Validate the credentials against the RegisterSchema using Zod's safeParse method
   const validationDetails = RegisterSchema.safeParse(credentials);
-
-  // Check if the validation failed, return an error message if the schema is invalid
+  
   if (!validationDetails.success) {
-    return { error: "Invalid fields!" }
+    return { error: "Invalid fields!" } // return error is validation fails
   }
-
   const { name, email, password } = validationDetails.data;
+
   const passwordHash = await bcrypt.hash(password, 10);
 
-  // getUserByEmail util from data/user.ts
+  //? getUserByEmail util from data/user.ts
   const existingUser = await getUserByEmail(email);
 
   if (existingUser) {
     return { error: "Email already in use!" }
   }
 
+  //? Create a new user in the database
   await db.user.create({
     data: {
       name,
