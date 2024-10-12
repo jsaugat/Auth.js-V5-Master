@@ -26,9 +26,11 @@ import { login } from "@/actions/login";
 type LoginSchemaType = z.infer<typeof LoginSchema>;
 
 export const LoginForm = () => {
+  // error and success states are created for displaying error and success UI messages in the form 
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+
   //? Use zodResolver to integrate Zod schema validation with the form
   const form = useForm<LoginSchemaType>({
     resolver: zodResolver(LoginSchema), // Attach the schema validation
@@ -45,9 +47,9 @@ export const LoginForm = () => {
 
     startTransition(() => {
       login(credentials)
-        .then((data) => {
-          setError(data.error)
-          setSuccess(data.success)
+        .then((data) => { //* Here, data is the object returned from the login function
+          setError(data?.error) // If the data object has an error key, set the error state to the value of the error key
+          setSuccess(data?.success) // If the data object has a success key, set the success state to the value of the success key
         })
     })
 
