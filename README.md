@@ -1,5 +1,6 @@
 ## Tips
-- Client side validations can always be bypassed
+- Client side validations can always be bypassed.
+- Middleware works in the edge, can't use prisma in `middleware.ts` file.
 
 ## Get Started with Prisma, Neon
 1. Run `npm i -D prisma`
