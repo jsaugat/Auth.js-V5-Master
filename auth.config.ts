@@ -11,7 +11,6 @@
  * NextAuthConfig type but does not include a database adapter.
  */
 
-
 import { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { LoginSchema } from "@/schemas"
