@@ -10,6 +10,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -17,15 +22,16 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String? // optional, because we don't have pw in case of google or github login
+  role          UserRole  @default(USER)
   accounts      Account[]
 }
 
 model Account {
   id                String  @id @default(cuid())
-  userId            String 
+  userId            String
   type              String
   provider          String
-  providerAccountId String 
+  providerAccountId String
   refresh_token     String? @db.Text
   access_token      String? @db.Text
   expires_at        Int?
@@ -38,4 +44,3 @@ model Account {
 
   @@unique([provider, providerAccountId])
 }
-
