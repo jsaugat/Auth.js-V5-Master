@@ -12,15 +12,33 @@
  * The PrismaAdapter integrates Prisma to handle session and user data in the database.
  */
 
-import NextAuth from "next-auth"
+import NextAuth, { type DefaultSession } from "next-auth"
 import authConfig from "@/auth.config"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { db } from "@/lib/db"
 import { getUserById } from "./data/user"
 
+// declare module "next-auth" {
+//   interface User {
+//     role?: string;
+//   }
+// }
+
 declare module "next-auth" {
-  interface User {
-    role?: string;
+  /**
+   * Returned by `auth`, `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
+   */
+  interface Session {
+    user: {
+      /** The user's postal address. */
+      role: string
+      /**
+       * By default, TypeScript merges new interface properties and overwrites existing ones.
+       * In this case, the default session user properties will be overwritten,
+       * with the new ones defined above. To keep the default session user properties,
+       * you need to add them back into the newly declared interface.
+       */
+    } & DefaultSession["user"]
   }
 }
 
