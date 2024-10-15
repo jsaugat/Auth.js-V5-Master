@@ -49,6 +49,14 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
   //***** The `callbacks` object allows you to extend the token and session objects. ***** //
   //  By default, the `id` property does not exist on `token` or `session`. See the [TypeScript](https://authjs.dev/getting-started/typescript) on how to add it.
   callbacks: {
+    // Use the signIn() callback to control if a user is allowed to sign in.
+    // async signIn({ user }) {
+    //   if (!user.id) return false;
+    //   const existingUser = await getUserById(user.id);
+    //   if (!existingUser || !existingUser.emailVerified) return false;
+    //   // console.log({ userrrr: user })
+    //   return true;
+    // },
     // documentation link: https://authjs.dev/guides/extending-the-session
     //? extend jwt before session because session depends on jwt
     async jwt({ token }) {
