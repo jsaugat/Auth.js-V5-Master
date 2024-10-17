@@ -21,6 +21,7 @@ import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { useState, useTransition } from "react";
 import { login } from "@/actions/login";
+import { useSearchParams } from 'next/navigation';
 
 // Types
 type LoginSchemaType = z.infer<typeof LoginSchema>;
@@ -30,6 +31,10 @@ export const LoginForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+
+
+  const searchParams = useSearchParams()
+  const urlError = searchParams.get('error') === "OAuthAccountNotLinked" ? "Email address already linked to another provider." : "";
 
   //? Use zodResolver to integrate Zod schema validation with the form
   const form = useForm<LoginSchemaType>({
@@ -103,7 +108,7 @@ export const LoginForm = () => {
             />
           </div>
           <div className="space-y-4">
-            <FormError message={error} />
+            <FormError message={error || urlError} />
             <FormSuccess message={success} />
             <Button type="submit" className="w-full" disabled={isPending}>Log In</Button>
           </div>
