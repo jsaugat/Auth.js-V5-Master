@@ -2,8 +2,11 @@ import React from 'react'
 import { auth, signOut } from '@/auth' //? signOut from auth.ts only works in server components
 import { Button } from '@/components/ui/button';
 
-export default function Page() {
-  const session = auth();
+export default async function Page() {
+  const session = await auth();
+  if (!session || !session.user) {
+    return <div>Not authenticated</div>;
+  }
   return (
     <div>
       {JSON.stringify(session)}
