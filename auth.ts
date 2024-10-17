@@ -42,11 +42,27 @@ declare module "next-auth" {
   }
 }
 
-export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: true,
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
-  //***** The `callbacks` object allows you to extend the token and session objects. ***** //
+  events: {
+    //** Events are asynchronous functions that do not return a response. docs: https://next-auth.js.org/configuration/events **//
+    /**
+     * 
+     * This automatically marks the user's email as verified when they link a new account, assuming that the linked account (e.g., Google, GitHub) has already verified the user's email.
+     * linkAccount triggers when a user connects a new OAuth provider account
+     */
+    async linkAccount({ user }) {
+      await db.user.update({
+        where: { id: user.id },
+        data: { emailVerified: new Date() }
+        // 'emailVerified' stores the date when the email was verified
+      })
+    }
+  },
+  //** Callbacks are asynchronous functions you can use to control what happens when an action is performed. **//
+  //** The `callbacks` object allows you to extend the token and session objects. ** //
   //  By default, the `id` property does not exist on `token` or `session`. See the [TypeScript](https://authjs.dev/getting-started/typescript) on how to add it.
   callbacks: {
     // Use the signIn() callback to control if a user is allowed to sign in.
