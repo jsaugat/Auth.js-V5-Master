@@ -19,7 +19,7 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
-  emailVerified DateTime?
+  emailVerified DateTime? // having 'emailVerified' a dateTime field rather than a boolean is that it not only indicates whether the email is verified but also records when the verification happened.
   image         String?
   password      String? // optional, because we don't have pw in case of google or github login
   role          UserRole  @default(USER)
