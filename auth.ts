@@ -47,8 +47,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/auth/login",
-    error: "/auth/error",
+    signIn: "/auth/login", //directs users to a custom login page at /auth/login instead of the default NextAuth sign-in page.
+    error: "/auth/error", //specifies a custom page to handle authentication errors.
   },
   events: {
     //** Events are asynchronous functions that do not return a response. docs: https://next-auth.js.org/configuration/events **//
