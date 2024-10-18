@@ -51,9 +51,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/auth/error", //specifies a custom page to handle authentication errors.
   },
   events: {
-    //** Events are asynchronous functions that do not return a response. docs: https://next-auth.js.org/configuration/events **//
+    //** EVENTS are asynchronous functions that do not return a response. docs: https://next-auth.js.org/configuration/events **//
     /**
-     * 
+     * VERIFICATION FOR OAUTH ACCOUNTS: 
      * This automatically marks the user's email as verified when they link a new account, assuming that the linked account (e.g., Google, GitHub) has already verified the user's email.
      * linkAccount triggers when a user connects a new OAuth provider account
      */
@@ -65,7 +65,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       })
     }
   },
-  //** Callbacks are asynchronous functions you can use to control what happens when an action is performed. **//
+  //** CALLBACKS are asynchronous functions you can use to control what happens when an action is performed. **//
   //** The `callbacks` object allows you to extend the token and session objects. ** //
   //  By default, the `id` property does not exist on `token` or `session`. See the [TypeScript](https://authjs.dev/getting-started/typescript) on how to add it.
   callbacks: {
