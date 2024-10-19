@@ -2,7 +2,10 @@
  * Array of routes that are public and do not require authentication.
  * @type {string[]}
  */
-export const publicRoutes = ["/"];
+export const publicRoutes = [
+  "/",
+  "/auth/verify-email", // User can change their email from the settings page while being logged in so... this route must be public 
+];
 
 /**
  * Array of authentication routes.
@@ -12,7 +15,6 @@ export const authRoutes = [
   "/auth/login",
   "/auth/register",
   "/auth/error",
-  "/auth/verify-email"
 ];
 
 /**
