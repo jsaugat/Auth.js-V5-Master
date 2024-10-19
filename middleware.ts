@@ -24,12 +24,13 @@ export default authMiddleware((request) => {
     return NextResponse.next();
   };
 
-  //? Redirect - the authorized users to the default-login-path
+  // Handle authentication routes
   if (isAuthRoute) {
+    // redirect logged-in users to the default login redirect path
     if (isLoggedIn) {
       return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
-    return NextResponse.next(); // by default, auth routes is visible
+    return NextResponse.next(); // Allow access to auth routes for non-logged-in users
   }
 
   //? Redirect - the unauthorized users to the login page
