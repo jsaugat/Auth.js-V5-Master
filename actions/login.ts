@@ -5,21 +5,42 @@ import { LoginSchema } from "@/schemas";
 import { signIn } from "@/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { AuthError } from "next-auth";
+import { getUserByEmail } from "@/data/user";
+import { generateVerificationToken } from "@/lib/tokens";
+import { sendVerificationEmail } from "@/app/api/send/route";
 
 export const login = async (credentials: z.infer<typeof LoginSchema>) => {
   console.log(credentials);
 
-  //***** VALIDATION *****//
-  const validationResult = LoginSchema.safeParse(credentials);
-  console.log(validationResult)
-  // check if validation failed, return message if the schema is invalid
+  //? VALIDATION //
+  const validationResult = LoginSchema.safeParse(credentials); // returns an object with success and data keys
   if (!validationResult.success) {
     return { error: "Invalid fields!" }
   }
 
-  //**************** IF FIELDS ARE VALIDATED SUCCESSFULLY, PROCEED WITH THE LOGIN ****************//
-  // Destructure email and password from the credentials object
+  //? PROCEED WITH THE LOGIN, IF FIELDS ARE VALIDATED SUCCESSFULLY //
   const { email, password } = validationResult.data;
+  const existingUser = await getUserByEmail(email);
+
+  // Check if user exists
+  if (!existingUser) {
+    return { error: "Unregistered email address!" }
+  }
+
+  // Check if user has a password (not OAuth signup)
+  if (!existingUser.password) {
+    // If the user has no password, they must have signed up with a OAuth provider
+    return { error: "Invalid login method for this email! Please use the OAuth provider you signed up with." }
+  }
+
+  // Handle unverified email
+  if (!existingUser.emailVerified) {
+    const newVerificationToken = await generateVerificationToken(existingUser.email ?? "");
+    // Send verification token email
+    await sendVerificationEmail(newVerificationToken.email, newVerificationToken.token)
+    return { success: "Confirmation Email Sent!" }
+  }
+
   /**
    * Here's the docs link on how the signIn() works : https://authjs.dev/getting-started/session-management/login 
    * signIn() syntax: signIn(provider: string, credentials: any, options?: SignInOptions): Promise<SignInResponse>
