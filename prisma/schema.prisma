@@ -10,20 +10,22 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Define user roles for access control
 enum UserRole {
   USER
   ADMIN
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? // having 'emailVerified' a dateTime field rather than a boolean is that it not only indicates whether the email is verified but also records when the verification happened.
-  image         String?
-  password      String? // optional, because we don't have pw in case of google or github login
-  role          UserRole  @default(USER)
-  accounts      Account[]
+  id                String              @id @default(cuid())
+  name              String?
+  email             String?             @unique
+  emailVerified     DateTime? // having 'emailVerified' a dateTime field rather than a boolean is that it not only indicates whether the email is verified but also records when the verification happened.
+  image             String?
+  password          String? // optional, because we don't have pw in case of google or github login
+  role              UserRole            @default(USER)
+  accounts          Account[]
+  VerificationToken VerificationToken[] // Defines a one-to-many relationship between User and VerificationToken models
 }
 
 model Account {
@@ -40,7 +42,20 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade) // Defines a field named "user" of type "User" in the "Account" model. uses "userId" to make the connection for each Account to a User and ensures that if a user is deleted, their associated accounts are also removed
 
+  // Ensure each account is unique per provider
   @@unique([provider, providerAccountId])
+}
+
+// This model is needed only for Credentials Provider accounts
+model VerificationToken {
+  id         String   @id @default(cuid())
+  email      String
+  token      String   @unique
+  expires_at DateTime
+  User       User?    @relation(fields: [userId], references: [id])
+  userId     String?
+
+  @@unique([email, token])
 }
