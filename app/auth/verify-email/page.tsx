@@ -1,20 +1,36 @@
 "use client"
 
-import { Button } from '@/components/ui/button'
-import { Check } from 'lucide-react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import React from 'react'
+import VerifyEmailContent from './content'
+import { verifyEmail } from '@/actions/verifyEmail'
 
 export default function VerifyEmail() {
+  const [success, setSuccess] = useState<string | undefined>("")
+  const [error, setError] = useState<string | undefined>("")
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
-  return (
-    <div className='flex flex-col items-center gap-4'>
-      <p>FYI, your account verification token is : <span className="text-neutral-400">{token}</span></p>
-      <Button className="border border-border/10 hover:border-border/50 flex gap-2">
-        <Check className='size-4' />
-        Confirm email
-      </Button>
-    </div>
-  )
+
+  const autoVerifyUser = useCallback(() => {
+    if (!token) {
+      setError('Missing token!');
+      return;
+    }
+    console.log('Verifying user...', token)
+    verifyEmail(token)
+      .then(data => {
+        setSuccess(data.success)
+        setError(data.error)
+      })
+      .catch(error => {
+        console.error('Error verifying user, something went wrong in verifyEmail server action:', error)
+        setError('Error verifying user')
+      })
+  }, [token])
+
+  useEffect(() => {
+    autoVerifyUser()
+  }, [autoVerifyUser])
+
+  return <VerifyEmailContent token={token} success={success} error={error} />
 }
