@@ -26,7 +26,3 @@
 2. Vist http://localhost:3000/api/auth/providers to check the providers being used.
 
 
-
-
-
-- create sendVerificationEmail 

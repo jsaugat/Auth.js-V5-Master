@@ -22,6 +22,7 @@ import { FormSuccess } from "@/components/form-success";
 import { useState, useTransition } from "react";
 import { login } from "@/actions/login";
 import { useSearchParams } from 'next/navigation';
+import Link from "next/link";
 
 // Types
 type LoginSchemaType = z.infer<typeof LoginSchema>;
@@ -102,6 +103,16 @@ export const LoginForm = () => {
                   <FormDescription>
                     Enter your password.
                   </FormDescription>
+                  <Button
+                    // size={"sm"}
+                    variant="link"
+                    asChild
+                    className="px-0"
+                  >
+                    <Link href="/auth/reset">
+                      Forgot your password?
+                    </Link>
+                  </Button>
                   <FormMessage />
                 </FormItem>
               )}
