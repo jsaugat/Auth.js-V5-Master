@@ -5,6 +5,7 @@
 export const publicRoutes = [
   "/",
   "/auth/verify-email", // User can change their email from the settings page while being logged in so... this route must be public 
+  "/auth/new-password",
 ];
 
 /**
