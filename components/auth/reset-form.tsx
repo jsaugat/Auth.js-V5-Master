@@ -20,7 +20,7 @@ import * as z from "zod";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { useState, useTransition } from "react";
-import { sendResetEmail } from "@/actions/sendResetEmail";
+import { resetPassword } from "@/actions/resetPassword";
 
 // Types
 type ResetSchemaType = z.infer<typeof ResetSchema>;
@@ -46,7 +46,7 @@ export const ResetForm = () => {
 
     startTransition(() => {
       // Call the function to send reset email (you need to implement this)
-      sendResetEmail(credentials.email)
+      resetPassword(credentials)
         .then((data) => {
           setError(data?.error);
           setSuccess(data?.success);
@@ -61,7 +61,7 @@ export const ResetForm = () => {
       headerLabel="Reset Your Password"
       backButtonLabel="Back to login"
       backButtonHref="/auth/login"
-      showSocial
+      showSocial={false}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
