@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  * @param token - The verification token
  */
 export const sendVerificationEmail = async (
-  email: string,
+  recipientEmail: string,
   token: string
 ) => {
   // Construct the confirmation link
@@ -19,7 +19,7 @@ export const sendVerificationEmail = async (
     // Attempt to send the email using Resend
     const { data, error } = await resend.emails.send({
       from: 'onboarding@resend.dev',
-      to: email,
+      to: recipientEmail,
       subject: "Confirm your email",
       html: `<p>Click <a href="${confirmLink}">here</a> to confirm email.</p>`,
     });
@@ -70,3 +70,36 @@ export const sendPasswordResetEmail = async (
     return Response.json({ error }, { status: 500 });
   }
 }
+
+/**
+ * Sends a two-factor authentication token to the user's email.
+ * @param email - The recipient's email address
+ * @param token - The two-factor authentication token
+ * @returns A promise that resolves to the response from the email service
+ */
+export const sendTwoFactorTokenEmail = async (recipientEmail: string, token: string) => {
+  // Construct the email content
+  const subject = "Your Two-Factor Authentication Code";
+  const html = `<p>Your 2FA code is: <strong>${token}</strong></p>
+                <p>Use this code to complete your login process. It will expire in 5 minutes.</p>`;
+
+  try {
+    // Attempt to send the email using Resend
+    const { data, error } = await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: recipientEmail,
+      subject,
+      html,
+    });
+    // error response
+    if (error) {
+      console.error("Error sending email:", error);
+      return Response.json({ error: "Failed to send email." }, { status: 500 });
+    }
+    // success response
+    return Response.json(data);
+  } catch (error) {
+    console.error("Exception in sending email:", error);
+    return Response.json({ error: "An error occurred while sending the email." }, { status: 500 });
+  }
+};
