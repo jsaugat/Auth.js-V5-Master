@@ -1,6 +1,6 @@
-import bcrypt from 'bcryptjs';
 "use server";
 
+import bcrypt from 'bcryptjs';
 import { NewPasswordSchema } from "@/schemas";
 import { z } from "zod";
 import { db } from '@/lib/db';
