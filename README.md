@@ -24,5 +24,3 @@
 
 1. Follow the [Auth.js](https://authjs.dev/getting-started/installation) docs commands.
 2. Vist http://localhost:3000/api/auth/providers to check the providers being used.
-
-
