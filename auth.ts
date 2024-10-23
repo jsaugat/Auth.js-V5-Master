@@ -17,6 +17,7 @@ import authConfig from "@/auth.config"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { db } from "@/lib/db"
 import { getUserById } from "./data/user"
+import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation"
 
 // declare module "next-auth" {
 //   interface User {
@@ -70,6 +71,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   //  By default, the `id` property does not exist on `token` or `session`. See the [TypeScript](https://authjs.dev/getting-started/typescript) on how to add it.
   callbacks: {
     //? Use the signIn() callback to control if a user is allowed to sign in.
+    // "user" parameter represents the user who is currently attempting to log in, while the "account" parameter provides context about the method of authentication being used (e.g., OAuth provider or credentials).
     async signIn({ user, account }) {
       console.log({ "signIn() callback params": { user, account } })
 
@@ -84,6 +86,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!isVerifiedUser) return false;
 
       //todo: add 2FA verification here
+      if (existingUser?.isTwoFactorEnabled) {
+        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
+        console.log({ twoFactorConfirmation })
+        if (!twoFactorConfirmation) return false;
+        // delete the 2FA confirmation record 
+        await db.twoFactorConfirmation.delete({ where: { id: twoFactorConfirmation.id } });
+      }
       return true;
     },
     // documentation link: https://authjs.dev/guides/extending-the-session
