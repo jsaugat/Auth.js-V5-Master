@@ -6,8 +6,11 @@ import { signIn } from "@/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { AuthError } from "next-auth";
 import { getUserByEmail } from "@/data/user";
-import { generateVerificationToken } from "@/lib/tokens";
-import { sendVerificationEmail } from "@/app/api/send/route";
+import { generateVerificationToken, generateTwoFactorToken } from "@/lib/tokens";
+import { sendVerificationEmail, sendTwoFactorTokenEmail } from "@/app/api/send/route";
+import { getTwoFactorTokenByEmail } from "@/data/two-factor-token";
+import { db } from "@/lib/db";
+import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
 
 export const login = async (credentials: z.infer<typeof LoginSchema>) => {
   console.log(credentials);
@@ -19,7 +22,7 @@ export const login = async (credentials: z.infer<typeof LoginSchema>) => {
   }
 
   //? PROCEED WITH THE LOGIN, IF FIELDS ARE VALIDATED SUCCESSFULLY //
-  const { email, password } = validationResult.data;
+  const { email, password, code } = validationResult.data;
   const existingUser = await getUserByEmail(email);
 
   // Check if user exists
@@ -33,19 +36,56 @@ export const login = async (credentials: z.infer<typeof LoginSchema>) => {
     return { error: "Invalid login method for this email! Please use the OAuth provider you signed up with." }
   }
 
-  // Handle unverified email
+  //? HANDLE EMAIL VERIFICATION //
   if (!existingUser.emailVerified) {
     const newVerificationToken = await generateVerificationToken(existingUser.email ?? "");
-    // Send verification token email
+    // Send verification token email -> (recipient email, token)
     await sendVerificationEmail(newVerificationToken.email, newVerificationToken.token)
     return { success: "Confirmation Email Sent!" }
   }
 
-  /**
-   * Here's the docs link on how the signIn() works : https://authjs.dev/getting-started/session-management/login 
-   * signIn() syntax: signIn(provider: string, credentials: any, options?: SignInOptions): Promise<SignInResponse>
-  */
+  //? HANDLE TWO-FACTOR AUTHENTICATION //
+  if (existingUser.isTwoFactorEnabled && existingUser.email) {
+    // Check if the code is provided
+    if (code) {
+      // Check if the code is correct
+      const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email);
+      if (!twoFactorToken) {
+        return { error: "2FA token not found!" }
+      }
+      if (code !== twoFactorToken?.token) {
+        return { error: "Invalid 2FA code!" }
+      }
+      const hasExpired = new Date() > new Date(twoFactorToken.expires_at);
+      if (hasExpired) {
+        return { error: "2FA code has expired!" }
+      }
+
+      // Delete the 2FA token from the database
+      await db.twoFactorToken.delete({ where: { id: twoFactorToken.id } });
+      const existingConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
+      if (existingConfirmation) {
+        // Delete the 2FA confirmation record
+        await db.twoFactorConfirmation.delete({ where: { id: existingConfirmation.id } });
+      }
+
+      // Create a new 2FA confirmation record
+      await db.twoFactorConfirmation.create({ data: { userId: existingUser.id } });
+    } else {
+      // Generate a 2FA token and send it to the user's email
+      const twoFactorToken = await generateTwoFactorToken(existingUser.email);
+      await sendTwoFactorTokenEmail(twoFactorToken.email, twoFactorToken.token);
+      // The 'twoFactor' value can be used to create a state that toggles between the form and the code field to end 2FA code
+      return { twoFactor: true }
+    }
+  }
+
+  //? SIGN IN THE USER //
   try {
+    /**
+     * Here's the docs link on how the signIn() works : https://authjs.dev/getting-started/session-management/login 
+     * signIn() syntax: signIn(provider: string, credentials: any, options?: SignInOptions): Promise<SignInResponse>
+    */
     await signIn("credentials", { email, password, redirectTo: DEFAULT_LOGIN_REDIRECT });
     return { success: "Logged in successfully!" }
   } catch (err) {
