@@ -48,11 +48,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/auth/login", //directs users to a custom login page at /auth/login instead of the default NextAuth sign-in page.
+    signIn: "/auth/login", // Custom login page.
     error: "/auth/error", //specifies a custom page to handle authentication errors.
   },
   events: {
-    //** EVENTS are asynchronous functions that do not return a response. docs: https://next-auth.js.org/configuration/events **//
+    //? EVENTS are asynchronous functions that do not return a response. docs: https://next-auth.js.org/configuration/events //
     /**
      * VERIFICATION FOR OAUTH ACCOUNTS: 
      * This automatically marks the user's email as verified when they link a new account, assuming that the linked account (e.g., Google, GitHub) has already verified the user's email.
@@ -66,26 +66,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       })
     }
   },
-  //** CALLBACKS are asynchronous functions you can use to control what happens when an action is performed. **//
-  //** The `callbacks` object allows you to extend the token and session objects. ** //
+  //? CALLBACKS are asynchronous functions you can use to control what happens when an action is performed. //
+  // The `callbacks` object allows you to extend the token and session objects.
   //  By default, the `id` property does not exist on `token` or `session`. See the [TypeScript](https://authjs.dev/getting-started/typescript) on how to add it.
   callbacks: {
     //? Use the signIn() callback to control if a user is allowed to sign in.
-    // "user" parameter represents the user who is currently attempting to log in, while the "account" parameter provides context about the method of authentication being used (e.g., OAuth provider or credentials).
     async signIn({ user, account }) {
+      // "user" parameter represents the user who is currently attempting to log in, while the "account" parameter provides context about the method of authentication being used (e.g., OAuth provider or credentials).
       console.log({ "signIn() callback params": { user, account } })
 
-      // Allow OAuth without email verification
+      //? ALLOW OAUTH PROVIDERS WITHOUT VERIFICATION //
       const isOAuthProvider = account?.provider !== "credentials";
       if (isOAuthProvider) return true;
 
-      // Block sign in if email is not verified
+      //? BLOCK NON VERIFIED USERS //
       const existingUser = await getUserById(user?.id ?? "");
       const isEmailVerified = existingUser?.emailVerified;
       const isVerifiedUser = existingUser && isEmailVerified;
       if (!isVerifiedUser) return false;
 
-      //todo: add 2FA verification here
+      //? HANDLE TWO-FACTOR AUTHENTICATION //
       if (existingUser?.isTwoFactorEnabled) {
         const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
         console.log({ twoFactorConfirmation })
