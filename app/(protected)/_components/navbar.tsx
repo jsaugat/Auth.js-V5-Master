@@ -9,6 +9,7 @@ import React from 'react'
 const navItems = [
   { href: "/client", label: "Client" },
   { href: "/server", label: "Server" },
+  { href: "/admin", label: "Admin" },
   { href: "/settings", label: "Settings" },
 ];
 
