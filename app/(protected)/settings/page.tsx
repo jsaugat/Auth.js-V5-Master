@@ -1,24 +1,18 @@
-import React from 'react'
-import { auth, signOut } from '@/auth' //? signOut from auth.ts only works in server components
-import { Button } from '@/components/ui/button';
+"use client";
 
-export default async function Page() {
-  const session = await auth();
-  if (!session || !session.user) {
+import React from 'react';
+import { useCurrentUser } from '@/hooks/use-current-user';
+
+export default function Page() {
+  const currentUserData = useCurrentUser()
+  if (!currentUserData) {
     return <div>Not authenticated</div>;
   }
+
   return (
     <div>
-      {JSON.stringify(session)}
-      <form action={async () => {
-        "use server"
-        await signOut();
-      }}>
-        {/* Signs out and redirects the user to the login page */}
-        <Button type='submit' variant="secondary">
-          Sign Out
-        </Button>
-      </form>
+      {JSON.stringify(currentUserData)}
+      {/* Signs out and redirects the user to the login page */}
     </div>
   )
 }
