@@ -1,3 +1,5 @@
+"use client"
+
 import { UserInfo } from '@/components/user-info';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import React from 'react'
@@ -7,7 +9,7 @@ export default function ServerPage() {
   return (
     <div>
       <UserInfo
-        label='Client Component'
+        label='🔷 Client Component'
         user={user}
       />
     </div>
