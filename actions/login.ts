@@ -46,22 +46,24 @@ export const login = async (credentials: z.infer<typeof LoginSchema>) => {
 
   //? HANDLE TWO-FACTOR AUTHENTICATION //
   if (existingUser.isTwoFactorEnabled && existingUser.email) {
-    // Check if the code is provided
+    //? CASE: CODE PROVIDED
     if (code) {
-      // Check if the code is correct
+      // Retrive the twoFactorToken from db.
       const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email);
       if (!twoFactorToken) {
         return { error: "2FA token not found!" }
       }
+      //? Check if the 'code' matches the token
       if (code !== twoFactorToken?.token) {
         return { error: "Invalid 2FA code!" }
       }
+      //? Proceed if the 'code' if valid and matches the token
       const hasExpired = new Date() > new Date(twoFactorToken.expires_at);
       if (hasExpired) {
         return { error: "2FA code has expired!" }
       }
 
-      // Delete the 2FA token from the database
+      // Delete the 2FA token from the db because user successfully verified the 'code' at this point
       await db.twoFactorToken.delete({ where: { id: twoFactorToken.id } });
       const existingConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
       if (existingConfirmation) {
@@ -71,7 +73,9 @@ export const login = async (credentials: z.infer<typeof LoginSchema>) => {
 
       // Create a new 2FA confirmation record
       await db.twoFactorConfirmation.create({ data: { userId: existingUser.id } });
-    } else {
+    }
+    //? CASE: NO CODE PROVIDED
+    else {
       // Generate a 2FA token and send it to the user's email
       const twoFactorToken = await generateTwoFactorToken(existingUser.email);
       await sendTwoFactorTokenEmail(twoFactorToken.email, twoFactorToken.token);
