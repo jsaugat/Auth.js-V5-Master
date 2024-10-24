@@ -18,30 +18,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { db } from "@/lib/db"
 import { getUserById } from "./data/user"
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation"
-
-// declare module "next-auth" {
-//   interface User {
-//     role?: string;
-//   }
-// }
-
-declare module "next-auth" {
-  /**
-   * Returned by `auth`, `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
-   */
-  interface Session {
-    user: {
-      /** The user's postal address. */
-      role: string
-      /**
-       * By default, TypeScript merges new interface properties and overwrites existing ones.
-       * In this case, the default session user properties will be overwritten,
-       * with the new ones defined above. To keep the default session user properties,
-       * you need to add them back into the newly declared interface.
-       */
-    } & DefaultSession["user"]
-  }
-}
+import { UserRole } from "@prisma/client"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: true,
@@ -103,6 +80,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!existingUser) return token; // return if the user is not found
 
       token.role = existingUser.role;
+      token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
+
       console.log({ token: token })
       return token //* this modified token will be available in the session callback
     },
@@ -113,7 +92,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.sub; // create a new property `id` on the session object
       }
       if (session.user && token.role) {
-        session.user.role = token.role as string; // create a new property `role` on the session object
+        session.user.role = token.role as UserRole; // create a new property `role` on the session object
+      }
+      if (session.user) {
+        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean; // create a new property `isTwoFactorEnabled` on the session object
       }
       console.log({ session: session })
       return session;
